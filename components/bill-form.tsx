@@ -33,13 +33,21 @@ export function BillForm({ action, bill, isEdit }: BillFormProps) {
   useEffect(() => {
     if (bill) {
       setCustomerName(bill.customer_name)
-      setItems([
-        {
+      // If bill has items array, use it
+      if (bill.items && bill.items.length > 0) {
+        setItems(bill.items.map(item => ({
+          product_name: item.product_name,
+          quantity: item.quantity,
+          price_per_unit: item.price_per_unit
+        })))
+      } else {
+        // Fallback to single item
+        setItems([{
           product_name: bill.product_name,
           quantity: bill.quantity,
           price_per_unit: bill.price_per_unit,
-        },
-      ])
+        }])
+      }
       setPaidAmount(bill.paid_amount)
     }
   }, [bill])
