@@ -1,9 +1,9 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { DashboardStats } from "@/components/dashboard-stats"
-import { BillTable } from "@/components/bill-table"
 import { getBills } from "@/lib/actions"
 import { PlusCircle } from "lucide-react"
+import { MainDashboard } from "@/components/main-dashboard"
 
 export default async function Home() {
   const bills = await getBills()
@@ -20,11 +20,9 @@ export default async function Home() {
         </Link>
       </div>
 
-      <DashboardStats />
+   <MainDashboard bills={bills} />
 
-      <div className="rounded-md border">
-        <BillTable bills={bills} />
-      </div>
+     
     </div>
   )
 }

@@ -1,17 +1,36 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { getDashboardStats, getBills } from "@/lib/actions"
+"use client"
 
-export async function DashboardStats() {
-  const stats = await getDashboardStats()
-  const bills = await getBills()
-  // Get unique customer names
-  const customers = Array.from(new Set(bills.map(b => b.customer_name))).filter(Boolean)
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { type Bill } from "@/lib/actions"
+import { useMemo } from "react"
+
+interface DashboardStatsProps {
+  bills: Bill[]
+  selectedCustomer: string | null
+}
+
+export function DashboardStats({ bills, selectedCustomer }: DashboardStatsProps) {
+  // Calculate stats based on selected customer or all bills
+  const stats = useMemo(() => {
+    const filteredBills = selectedCustomer 
+      ? bills.filter(bill => bill.customer_name === selectedCustomer)
+      : bills
+
+    const totalBills = filteredBills.length
+    const totalAmount = filteredBills.reduce((sum, bill) => sum + bill.total, 0)
+    const totalPaid = filteredBills.reduce((sum, bill) => sum + bill.paid_amount, 0)
+    const totalRemaining = filteredBills.reduce((sum, bill) => sum + bill.remaining_amount, 0)
+
+    return { totalBills, totalAmount, totalPaid, totalRemaining }
+  }, [bills, selectedCustomer])
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Total Products</CardTitle>
+          <CardTitle className="text-sm font-medium">
+            {selectedCustomer ? `${selectedCustomer}'s Bills` : "Total Products"}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{stats.totalBills}</div>
@@ -20,45 +39,34 @@ export async function DashboardStats() {
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Total Amount</CardTitle>
+          <CardTitle className="text-sm font-medium">
+            {selectedCustomer ? `${selectedCustomer}'s Total` : "Total Amount"}
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">${stats.totalAmount.toFixed(2)}</div>
+          <div className="text-2xl font-bold">₹{stats.totalAmount.toFixed(2)}</div>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Total Paid</CardTitle>
+          <CardTitle className="text-sm font-medium">
+            {selectedCustomer ? `${selectedCustomer}'s Paid` : "Total Paid"}
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">${stats.totalPaid.toFixed(2)}</div>
+          <div className="text-2xl font-bold">₹{stats.totalPaid.toFixed(2)}</div>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Total Remaining</CardTitle>
+          <CardTitle className="text-sm font-medium">
+            {selectedCustomer ? `${selectedCustomer}'s Remaining` : "Total Remaining"}
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">${stats.totalRemaining.toFixed(2)}</div>
-        </CardContent>
-      </Card>
-
-      <Card className="md:col-span-2 lg:col-span-4">
-        <CardHeader>
-          <CardTitle className="text-sm font-medium">Customers</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-2">
-            {customers.length === 0 ? (
-              <span className="text-muted-foreground">No customers yet</span>
-            ) : (
-              customers.map(name => (
-                <span key={name} className="bg-gray-100 px-3 py-1 rounded text-sm">{name}</span>
-              ))
-            )}
-          </div>
+          <div className="text-2xl font-bold">₹{stats.totalRemaining.toFixed(2)}</div>
         </CardContent>
       </Card>
     </div>
